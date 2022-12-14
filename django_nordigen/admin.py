@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Integration, Token
+from .models import Institution, Integration, Requisition, Token
 
 
 class NoAddChange:
@@ -29,4 +29,21 @@ class TokenAdmin(NoAddChange, admin.ModelAdmin):
 
     exclude = [
         'value',
+    ]
+
+
+@admin.register(Institution)
+class InstitutionAdmin(NoAddChange, admin.ModelAdmin):
+    list_display = [
+        'nordigen_id',
+        'name',
+    ]
+
+
+@admin.register(Requisition)
+class RequisitionAdmin(NoAddChange, admin.ModelAdmin):
+    list_display = [
+        'nordigen_id',
+        'institution',
+        'created_at',
     ]

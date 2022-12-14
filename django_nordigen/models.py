@@ -58,3 +58,27 @@ class Token(BaseModel):
 
     def __str__(self):
         return f'{self.type} for {self.integration}'
+
+
+class Institution(BaseModel):
+    nordigen_id = models.CharField(max_length=100, unique=True)
+    api_data = models.JSONField()
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def name(self):
+        return self.api_data['name']
+
+
+class Requisition(BaseModel):
+    integration = models.ForeignKey(Integration, on_delete=models.CASCADE)
+    nordigen_id = models.UUIDField(unique=True)
+    reference_id = models.UUIDField()
+    completed = models.BooleanField(default=False)
+    api_data = models.JSONField(null=True, blank=True)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.nordigen_id)

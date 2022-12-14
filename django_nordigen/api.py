@@ -1,20 +1,19 @@
 import logging
+from urllib.parse import urljoin
+from uuid import uuid4
 
 from django.conf import settings
+from django.urls import reverse
 from nordigen import NordigenClient
 
-from .models import Integration, Token
+from .models import Institution, Integration, Token
 
 logger = logging.getLogger(__name__)
 
 
-def get_client():
-    integration, _ = Integration.objects.get_or_create(
-        nordigen_id=settings.NORDIGEN_ID
-    )
-
+def get_client(integration):
     client = NordigenClient(
-        secret_id=settings.NORDIGEN_ID,
+        secret_id=integration.nordigen_id,
         secret_key=settings.NORDIGEN_KEY,
     )
 
@@ -52,13 +51,55 @@ def get_client():
     return client
 
 
+def get_or_create_institution(client, nordigen_id):
+    try:
+        return Institution.objects.get(nordigen_id=nordigen_id)
+    except Institution.DoesNotExist:
+        api_data = client.institution.get_institution_by_id(nordigen_id)
+        return Institution.objects.create(
+            nordigen_id=nordigen_id,
+            api_data=api_data,
+        )
+
+
 class Api:
-    def __init__(self, client):
+    def __init__(self, integration, client):
+        self.integration = integration
         self.client = client
 
     def get_institutions(self, country):
         return self.client.institution.get_institutions(country=country)
 
+    def create_requisition(self, institution_id, days):
+        reference_id = str(uuid4())
+        institution = get_or_create_institution(self.client, institution_id)
+        redirect_uri = urljoin(
+            settings.NORDIGEN_SITE_URL, reverse('nordigen:redirect')
+        )
+        session = self.client.initialize_session(
+            institution_id=institution_id,
+            redirect_uri=redirect_uri,
+            reference_id=reference_id,
+            max_historical_days=days,
+        )
+        self.integration.requisition_set.create(
+            institution=institution,
+            nordigen_id=session.requisition_id,
+            reference_id=reference_id,
+        )
+        return session.link
+
+    def accept_requisition(self, requisition):
+        requisition.api_data = self.client.requisition.get_requisition_by_id(
+            requisition_id=requisition.nordigen_id
+        )
+        requisition.completed = True
+        requisition.save()
+
 
 def get_api():
-    return Api(get_client())
+    integration, _ = Integration.objects.get_or_create(
+        nordigen_id=settings.NORDIGEN_ID,
+    )
+
+    return Api(integration, get_client(integration))
