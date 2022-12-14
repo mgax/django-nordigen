@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "django-nordigen"
+version = "0.0.1"
+description = ""
+authors = ["Alex Morega <alex@grep.ro>"]
+readme = "Readme.md"
+packages = [{include = "django_nordigen"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
