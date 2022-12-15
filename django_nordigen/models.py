@@ -109,6 +109,7 @@ class Account(BaseModel):
 
 class Balance(BaseModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    type = models.CharField(max_length=100)
     api_data = models.JSONField()
 
     def __str__(self):

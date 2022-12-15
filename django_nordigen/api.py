@@ -149,23 +149,19 @@ class Api:
 
             date_from = date_to
 
-    def get_balance(self, account):
+    def get_balances(self, account):
         account_api = self.client.account_api(id=account.nordigen_id)
         logger.info('Fetching balances from %s', account.nordigen_id)
-        api_data = account_api.get_balances()
-        assert len(api_data['balances']) == 1
-        [item] = api_data['balances']
-        assert item['balanceType'] in [
-            'expected', 'interimAvailable', 'openingBooked'
-        ]
-        return item
+        return account_api.get_balances()['balances']
 
     def sync_account(self, account):
         logger.info('Sync account %s', account)
 
-        account.balance_set.get_or_create(
-            defaults=dict(api_data=self.get_balance(account))
-        )
+        for api_data in self.get_balances(account):
+            account.balance_set.update_or_create(
+                type=api_data['balanceType'],
+                defaults=dict(api_data=api_data)
+            )
 
         seen = set()
         req = account.requisitions.order_by('-created_at').first()
