@@ -92,6 +92,10 @@ class Account(BaseModel):
     api_data = models.JSONField()
     api_details = models.JSONField()
     requisitions = models.ManyToManyField(Requisition, blank=True)
+    synced_at = models.DateTimeField(null=True)
+
+    class Meta:
+        ordering = ['-synced_at']
 
     @property
     def currency(self):
@@ -111,6 +115,7 @@ class Balance(BaseModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     type = models.CharField(max_length=100)
     api_data = models.JSONField()
+    synced_at = models.DateTimeField(null=True)
 
     def __str__(self):
         return f'{self.amount} {self.currency}'

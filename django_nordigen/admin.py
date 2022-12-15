@@ -63,7 +63,7 @@ class AccountAdmin(NoAddChange, admin.ModelAdmin):
         'nordigen_id',
         'institution',
         'currency',
-        'created_at',
+        'synced_at',
     ]
 
 
@@ -72,6 +72,7 @@ class BalanceAdmin(NoAddChange, admin.ModelAdmin):
     list_display = [
         '__str__',
         'account',
+        'synced_at',
     ]
 
 
