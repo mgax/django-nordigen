@@ -137,7 +137,7 @@ class Transaction(BaseModel):
                 name='nordigen_unique_account_internal_id',
             ),
         ]
-        ordering = ['-booking_date']
+        ordering = ['-booking_date', '-pk']
 
     def __str__(self):
         return f'{self.amount} {self.currency}'
