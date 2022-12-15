@@ -125,11 +125,17 @@ class Balance(BaseModel):
 
 class Transaction(BaseModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    nordigen_id = models.CharField(max_length=32, unique=True)
+    nordigen_id = models.CharField(max_length=32)
     api_data = models.JSONField()
     booking_date = models.DateField(null=True)
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['account', 'nordigen_id'],
+                name='nordigen_unique_account_internal_id',
+            ),
+        ]
         ordering = ['-booking_date']
 
     def __str__(self):
