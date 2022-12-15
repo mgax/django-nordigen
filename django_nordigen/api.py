@@ -88,6 +88,7 @@ class Api:
             institution=institution,
             nordigen_id=session.requisition_id,
             reference_id=reference_id,
+            max_historical_days=days,
         )
         return session.link
 
@@ -167,7 +168,8 @@ class Api:
         )
 
         seen = set()
-        since = timezone.now().date() - timedelta(days=90)
+        req = account.requisitions.order_by('-created_at').first()
+        since = timezone.now().date() - timedelta(days=req.max_historical_days)
         for tr in account.transaction_set.all():
             seen.add(tr.nordigen_id)
             if tr.booking_date and tr.booking_date > since:
