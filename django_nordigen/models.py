@@ -106,6 +106,22 @@ class Account(BaseModel):
         return self.nordigen_id
 
 
+class Balance(BaseModel):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    api_data = models.JSONField()
+
+    def __str__(self):
+        return f'{self.amount} {self.currency}'
+
+    @property
+    def amount(self):
+        return self.api_data['balanceAmount']['amount']
+
+    @property
+    def currency(self):
+        return self.api_data['balanceAmount']['currency']
+
+
 class Transaction(BaseModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     nordigen_id = models.CharField(max_length=32, unique=True)

@@ -132,6 +132,12 @@ class Api:
         date_from = since
         while date_from < now:
             date_to = min([date_from + interval, now])
+            logger.info(
+                'Fetching transactions from %s %s %s',
+                account.nordigen_id,
+                date_from,
+                date_to,
+            )
             resp = account_api.get_transactions(
                 date_from=date_from, date_to=date_to
             )
@@ -142,8 +148,23 @@ class Api:
 
             date_from = date_to
 
+    def get_balance(self, account):
+        account_api = self.client.account_api(id=account.nordigen_id)
+        logger.info('Fetching balances from %s', account.nordigen_id)
+        api_data = account_api.get_balances()
+        assert len(api_data['balances']) == 1
+        [item] = api_data['balances']
+        assert item['balanceType'] in [
+            'expected', 'interimAvailable', 'openingBooked'
+        ]
+        return item
+
     def sync_account(self, account):
         logger.info('Sync account %s', account)
+
+        account.balance_set.get_or_create(
+            defaults=dict(api_data=self.get_balance(account))
+        )
 
         seen = set()
         since = timezone.now().date() - timedelta(days=90)

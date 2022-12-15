@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Account,
+    Balance,
     Institution,
     Integration,
     Requisition,
@@ -63,6 +64,14 @@ class AccountAdmin(NoAddChange, admin.ModelAdmin):
         'institution',
         'currency',
         'created_at',
+    ]
+
+
+@admin.register(Balance)
+class BalanceAdmin(NoAddChange, admin.ModelAdmin):
+    list_display = [
+        '__str__',
+        'account',
     ]
 
 
