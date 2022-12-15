@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import Account, Institution, Integration, Requisition, Token
+from .models import (
+    Account,
+    Institution,
+    Integration,
+    Requisition,
+    Token,
+    Transaction
+)
 
 
 class NoAddChange:
@@ -56,4 +63,21 @@ class AccountAdmin(NoAddChange, admin.ModelAdmin):
         'institution',
         'currency',
         'created_at',
+    ]
+
+
+@admin.register(Transaction)
+class TransactionAdmin(NoAddChange, admin.ModelAdmin):
+    search_fields = [
+        'api_data',
+    ]
+
+    list_display = [
+        '__str__',
+        'booking_date',
+        'account',
+    ]
+
+    list_filter = [
+        'account',
     ]

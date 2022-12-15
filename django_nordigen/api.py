@@ -1,12 +1,14 @@
 import logging
+from datetime import date, timedelta
 from urllib.parse import urljoin
 from uuid import uuid4
 
 from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 from nordigen import NordigenClient
 
-from .models import Account, Institution, Integration, Token
+from .models import Account, Institution, Integration, Token, Transaction
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +116,59 @@ class Api:
 
         requisition.completed = True
         requisition.save()
+
+    def sync(self):
+        for requisition in self.integration.requisition_set.all():
+            self.sync_requisition(requisition)
+
+    def sync_requisition(self, requisition):
+        for account in requisition.account_set.all():
+            self.sync_account(account)
+
+    def iter_transactions(self, account, since, interval=timedelta(days=30)):
+        account_api = self.client.account_api(id=account.nordigen_id)
+        now = timezone.now().date()
+
+        date_from = since
+        while date_from < now:
+            date_to = min([date_from + interval, now])
+            resp = account_api.get_transactions(
+                date_from=date_from, date_to=date_to
+            )
+            for api_data in resp['transactions']['booked']:
+                nordigen_id = api_data.get('internalTransactionId')
+                if nordigen_id:
+                    yield nordigen_id, api_data
+
+            date_from = date_to
+
+    def sync_account(self, account):
+        logger.info('Sync account %s', account)
+
+        seen = set()
+        since = timezone.now().date() - timedelta(days=90)
+        for tr in account.transaction_set.all():
+            seen.add(tr.nordigen_id)
+            if tr.booking_date and tr.booking_date > since:
+                since = tr.booking_date
+
+        new = []
+        for nordigen_id, api_data in self.iter_transactions(account, since):
+            if nordigen_id in seen:
+                continue
+            bookingDate = api_data.get('bookingDate')
+            booking_date = bookingDate and date.fromisoformat(bookingDate)
+            new.append(
+                Transaction(
+                    account=account,
+                    nordigen_id=nordigen_id,
+                    api_data=api_data,
+                    booking_date=booking_date,
+                )
+            )
+            seen.add(nordigen_id)
+
+        Transaction.objects.bulk_create(new)
 
 
 def get_api():

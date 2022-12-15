@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.db import models
 from django.utils import timezone
@@ -95,3 +95,33 @@ class Account(BaseModel):
     @property
     def currency(self):
         return self.api_details['account']['currency']
+
+    @property
+    def iban(self):
+        return self.api_details['account'].get('iban')
+
+    def __str__(self):
+        if self.iban:
+            return self.iban
+        return self.nordigen_id
+
+
+class Transaction(BaseModel):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    nordigen_id = models.CharField(max_length=32, unique=True)
+    api_data = models.JSONField()
+    booking_date = models.DateField(null=True)
+
+    class Meta:
+        ordering = ['-booking_date']
+
+    def __str__(self):
+        return f'{self.amount} {self.currency}'
+
+    @property
+    def amount(self):
+        return self.api_data['transactionAmount']['amount']
+
+    @property
+    def currency(self):
+        return self.api_data['transactionAmount']['currency']
