@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Institution, Integration, Requisition, Token
+from .models import Account, Institution, Integration, Requisition, Token
 
 
 class NoAddChange:
@@ -45,5 +45,15 @@ class RequisitionAdmin(NoAddChange, admin.ModelAdmin):
     list_display = [
         'nordigen_id',
         'institution',
+        'created_at',
+    ]
+
+
+@admin.register(Account)
+class AccountAdmin(NoAddChange, admin.ModelAdmin):
+    list_display = [
+        'nordigen_id',
+        'institution',
+        'currency',
         'created_at',
     ]

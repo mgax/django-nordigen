@@ -82,3 +82,16 @@ class Requisition(BaseModel):
 
     def __str__(self):
         return str(self.nordigen_id)
+
+
+class Account(BaseModel):
+    integration = models.ForeignKey(Integration, on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
+    nordigen_id = models.UUIDField()
+    api_data = models.JSONField()
+    api_details = models.JSONField()
+    requisitions = models.ManyToManyField(Requisition, blank=True)
+
+    @property
+    def currency(self):
+        return self.api_details['account']['currency']

@@ -6,7 +6,7 @@ from django.conf import settings
 from django.urls import reverse
 from nordigen import NordigenClient
 
-from .models import Institution, Integration, Token
+from .models import Account, Institution, Integration, Token
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +93,25 @@ class Api:
         requisition.api_data = self.client.requisition.get_requisition_by_id(
             requisition_id=requisition.nordigen_id
         )
+
+        for account_id in requisition.api_data['accounts']:
+            try:
+                account = self.integration.account_set.get(
+                    nordigen_id=account_id
+                )
+            except Account.DoesNotExist:
+                account_api = self.client.account_api(id=account_id)
+                api_data = account_api.get_metadata()
+                api_details = account_api.get_details()
+                account = self.integration.account_set.create(
+                    institution=requisition.institution,
+                    nordigen_id=account_id,
+                    api_data=api_data,
+                    api_details=api_details,
+                )
+
+            account.requisitions.add(requisition)
+
         requisition.completed = True
         requisition.save()
 
