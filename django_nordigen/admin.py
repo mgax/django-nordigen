@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import (
     Account,
@@ -45,7 +46,11 @@ class InstitutionAdmin(NoAddChange, admin.ModelAdmin):
     list_display = [
         'nordigen_id',
         'name',
+        'logo_image',
     ]
+
+    def logo_image(self, obj):
+        return format_html('<img width=30 src="{}">', obj.logo)
 
 
 @admin.register(Requisition)

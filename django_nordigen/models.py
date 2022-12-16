@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 
 from django.db import models
 from django.utils import timezone
@@ -70,6 +70,10 @@ class Institution(BaseModel):
     @property
     def name(self):
         return self.api_data['name']
+
+    @property
+    def logo(self):
+        return self.api_data['logo']
 
 
 class Requisition(BaseModel):
