@@ -120,7 +120,7 @@ class Api:
         requisition.completed = True
         requisition.save()
 
-    def sync(self, requisitions, max_age):
+    def sync(self, requisitions, max_age, history):
         now = timezone.now()
         for requisition in self.integration.requisition_set.all():
             if (
@@ -130,7 +130,7 @@ class Api:
                 for account in requisition.account_set.exclude(
                     synced_at__gt=now - max_age
                 ):
-                    self.sync_account(account)
+                    self.sync_account(account, history)
 
     def iter_transactions(self, account, since, interval=timedelta(days=30)):
         account_api = self.client.account_api(id=account.nordigen_id)
@@ -160,7 +160,7 @@ class Api:
         logger.info('Fetching balances from %s', account.nordigen_id)
         return account_api.get_balances()['balances']
 
-    def sync_account(self, account):
+    def sync_account(self, account, history):
         logger.info('Sync account %s', account)
         now = timezone.now()
 
@@ -173,9 +173,13 @@ class Api:
                 )
             )
 
+        if history:
+            req = account.requisitions.order_by('-created_at').first()
+            since = now.date() - timedelta(days=req.max_historical_days)
+        else:
+            since = now.date() - timedelta(days=30)
+
         seen = set()
-        req = account.requisitions.order_by('-created_at').first()
-        since = now.date() - timedelta(days=req.max_historical_days)
         for tr in account.transaction_set.all():
             seen.add(tr.nordigen_id)
             if tr.booking_date and tr.booking_date > since:
@@ -198,6 +202,8 @@ class Api:
             seen.add(nordigen_id)
 
         Transaction.objects.bulk_create(new)
+        if new:
+            logger.info('Created %d transactions', len(new))
 
         account.synced_at = now
         account.save(update_fields=['synced_at'])

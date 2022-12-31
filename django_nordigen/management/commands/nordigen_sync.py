@@ -1,4 +1,5 @@
 from datetime import timedelta
+from uuid import UUID
 
 from django.core.management.base import BaseCommand
 
@@ -11,8 +12,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('requisition', nargs='*')
         parser.add_argument('--max-age', default=900, type=int)
+        parser.add_argument('--history', action='store_true')
 
     def handle(self, *args, **options):
-        requisitions = options['requisition'] or ALL_REQUISITIONS
+        requisitions = [
+            UUID(r) for r in options['requisition']
+        ] or ALL_REQUISITIONS
+        history = options['history']
         max_age = timedelta(seconds=options['max_age'])
-        get_api().sync(requisitions, max_age)
+        get_api().sync(requisitions, max_age, history)
