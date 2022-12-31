@@ -12,6 +12,8 @@ from .models import Account, Institution, Integration, Token, Transaction
 
 logger = logging.getLogger(__name__)
 
+ALL_REQUISITIONS = object()
+
 
 def get_client(integration):
     client = NordigenClient(
@@ -118,13 +120,17 @@ class Api:
         requisition.completed = True
         requisition.save()
 
-    def sync(self, max_age):
+    def sync(self, requisitions, max_age):
         now = timezone.now()
         for requisition in self.integration.requisition_set.all():
-            for account in requisition.account_set.exclude(
-                synced_at__gt=now - max_age
+            if (
+                requisitions is ALL_REQUISITIONS
+                or requisition.nordigen_id in requisitions
             ):
-                self.sync_account(account)
+                for account in requisition.account_set.exclude(
+                    synced_at__gt=now - max_age
+                ):
+                    self.sync_account(account)
 
     def iter_transactions(self, account, since, interval=timedelta(days=30)):
         account_api = self.client.account_api(id=account.nordigen_id)
