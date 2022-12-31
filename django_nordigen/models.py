@@ -110,9 +110,7 @@ class Account(BaseModel):
         return self.api_details['account'].get('iban')
 
     def __str__(self):
-        if self.iban:
-            return self.iban
-        return self.nordigen_id
+        return self.iban or str(self.nordigen_id)
 
 
 class Balance(BaseModel):

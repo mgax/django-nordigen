@@ -65,9 +65,9 @@ class RequisitionAdmin(NoAddChange, admin.ModelAdmin):
 @admin.register(Account)
 class AccountAdmin(NoAddChange, admin.ModelAdmin):
     list_display = [
-        'nordigen_id',
-        'institution',
+        '__str__',
         'currency',
+        'institution',
         'synced_at',
     ]
 
