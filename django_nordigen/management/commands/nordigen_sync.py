@@ -1,3 +1,5 @@
+from argparse import BooleanOptionalAction
+
 from datetime import timedelta
 from uuid import UUID
 
@@ -13,6 +15,9 @@ class Command(BaseCommand):
         parser.add_argument('requisition', nargs='*')
         parser.add_argument('--max-age', default=900, type=int)
         parser.add_argument('--history', action='store_true')
+        parser.add_argument(
+            '--transactions', action=BooleanOptionalAction, default=True
+        )
 
     def handle(self, *args, **options):
         requisitions = [
@@ -20,4 +25,4 @@ class Command(BaseCommand):
         ] or ALL_REQUISITIONS
         history = options['history']
         max_age = timedelta(seconds=options['max_age'])
-        get_api().sync(requisitions, max_age, history)
+        get_api().sync(requisitions, max_age, history, options['transactions'])

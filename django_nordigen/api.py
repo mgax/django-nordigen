@@ -120,7 +120,7 @@ class Api:
         requisition.completed = True
         requisition.save()
 
-    def sync(self, requisitions, max_age, history):
+    def sync(self, requisitions, max_age, history, transactions=True):
         now = timezone.now()
         for requisition in self.integration.requisition_set.all():
             if (
@@ -130,7 +130,7 @@ class Api:
                 for account in requisition.account_set.exclude(
                     synced_at__gt=now - max_age
                 ):
-                    self.sync_account(account, history)
+                    self.sync_account(account, history, transactions)
 
     def iter_transactions(self, account, since, interval=timedelta(days=30)):
         account_api = self.client.account_api(id=account.nordigen_id)
@@ -160,25 +160,7 @@ class Api:
         logger.info('Fetching balances from %s', account.nordigen_id)
         return account_api.get_balances()['balances']
 
-    def sync_account(self, account, history):
-        logger.info('Sync account %s', account)
-        now = timezone.now()
-
-        for api_data in self.get_balances(account):
-            account.balance_set.update_or_create(
-                type=api_data['balanceType'],
-                defaults=dict(
-                    api_data=api_data,
-                    synced_at=now,
-                )
-            )
-
-        if history:
-            req = account.requisitions.order_by('-created_at').first()
-            since = now.date() - timedelta(days=req.max_historical_days)
-        else:
-            since = now.date() - timedelta(days=30)
-
+    def _sync_transactions(self, account, since):
         seen = set()
         for tr in account.transaction_set.all():
             seen.add(tr.nordigen_id)
@@ -204,6 +186,29 @@ class Api:
         Transaction.objects.bulk_create(new)
         if new:
             logger.info('Created %d transactions', len(new))
+
+    def sync_account(self, account, history, transactions=True):
+        logger.info('Sync account %s', account)
+        now = timezone.now()
+
+        for api_data in self.get_balances(account):
+            account.balance_set.update_or_create(
+                type=api_data['balanceType'],
+                defaults=dict(
+                    api_data=api_data,
+                    synced_at=now,
+                )
+            )
+
+        if transactions:
+            if history:
+                req = account.requisitions.order_by('-created_at').first()
+                since = now.date() - timedelta(days=req.max_historical_days)
+
+            else:
+                since = now.date() - timedelta(days=30)
+
+            self._sync_transactions(account, since)
 
         account.synced_at = now
         account.save(update_fields=['synced_at'])
