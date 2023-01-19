@@ -17,7 +17,7 @@ ALL_REQUISITIONS = object()
 
 def get_client(integration):
     client = NordigenClient(
-        secret_id=integration.nordigen_id,
+        secret_id=str(integration.nordigen_id),
         secret_key=settings.NORDIGEN_KEY,
     )
 
