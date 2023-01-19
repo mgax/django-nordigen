@@ -87,6 +87,8 @@ class TransactionAdmin(NoAddChange, admin.ModelAdmin):
         'api_data',
     ]
 
+    date_hierarchy = 'booking_date'
+
     list_display = [
         '__str__',
         'booking_date',
