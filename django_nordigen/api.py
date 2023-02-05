@@ -95,30 +95,56 @@ class Api:
         return session.link
 
     def accept_requisition(self, requisition):
-        requisition.api_data = self.client.requisition.get_requisition_by_id(
+        self.sync_requisition(requisition)
+        requisition.completed = True
+        requisition.save(update_fields=['completed'])
+
+    def sync_requisition(self, requisition):
+        api_data = self.client.requisition.get_requisition_by_id(
             requisition_id=requisition.nordigen_id
         )
+        if api_data != requisition.api_data:
+            logger.info('Requisition data updated for %s', requisition)
+            requisition.api_data = api_data
+            requisition.save(update_fields=['api_data'])
 
         for account_id in requisition.api_data['accounts']:
+            account_api = self.client.account_api(id=account_id)
+            api_data = account_api.get_metadata()
+            api_details = account_api.get_details()
+
             try:
                 account = self.integration.account_set.get(
                     nordigen_id=account_id
                 )
+
             except Account.DoesNotExist:
-                account_api = self.client.account_api(id=account_id)
-                api_data = account_api.get_metadata()
-                api_details = account_api.get_details()
                 account = self.integration.account_set.create(
                     institution=requisition.institution,
                     nordigen_id=account_id,
                     api_data=api_data,
                     api_details=api_details,
                 )
+                logger.info('Account %s created', account)
+
+            else:
+                changed = []
+
+                if dict(api_data, last_accessed=None) != dict(
+                    account.api_data, last_accessed=None
+                ):
+                    changed.append('api_data')
+                    account.api_data = api_data
+
+                if api_details != account.api_details:
+                    changed.append('api_details')
+                    account.api_details = api_details
+
+                if changed:
+                    logger.info('Account fields changed: %s', changed)
+                    account.save(update_fields=changed)
 
             account.requisitions.add(requisition)
-
-        requisition.completed = True
-        requisition.save()
 
     def sync(self, requisitions, max_age, history, transactions=True):
         now = timezone.now()
@@ -127,6 +153,7 @@ class Api:
                 requisitions is ALL_REQUISITIONS
                 or requisition.nordigen_id in requisitions
             ):
+                self.sync_requisition(requisition)
                 for account in requisition.account_set.exclude(
                     synced_at__gt=now - max_age
                 ):
