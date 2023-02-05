@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db import models
+from django.urls import reverse
 from django.utils.html import format_html
 
 from .models import (
@@ -67,9 +69,22 @@ class AccountAdmin(NoAddChange, admin.ModelAdmin):
     list_display = [
         '__str__',
         'currency',
+        'transactions',
         'institution',
         'synced_at',
     ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.annotate(transaction_count=models.Count('transaction'))
+
+    def transactions(self, obj):
+        return format_html(
+            '<a href="{}?account_id={}">{}</a>',
+            reverse('admin:django_nordigen_transaction_changelist'),
+            obj.pk,
+            obj.transaction_count,
+        )
 
 
 @admin.register(Balance)
