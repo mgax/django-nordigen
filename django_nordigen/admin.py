@@ -22,15 +22,22 @@ class NoAddChange:
         return False
 
 
+class BaseAdmin(admin.ModelAdmin):
+    readonly_fields = [
+        'created_at',
+        'updated_at',
+    ]
+
+
 @admin.register(Integration)
-class IntegrationAdmin(NoAddChange, admin.ModelAdmin):
+class IntegrationAdmin(NoAddChange, BaseAdmin):
     list_display = [
         'nordigen_id',
     ]
 
 
 @admin.register(Token)
-class TokenAdmin(NoAddChange, admin.ModelAdmin):
+class TokenAdmin(NoAddChange, BaseAdmin):
     list_display = [
         'integration',
         'type',
@@ -44,7 +51,7 @@ class TokenAdmin(NoAddChange, admin.ModelAdmin):
 
 
 @admin.register(Institution)
-class InstitutionAdmin(NoAddChange, admin.ModelAdmin):
+class InstitutionAdmin(NoAddChange, BaseAdmin):
     list_display = [
         'nordigen_id',
         'name',
@@ -56,7 +63,7 @@ class InstitutionAdmin(NoAddChange, admin.ModelAdmin):
 
 
 @admin.register(Requisition)
-class RequisitionAdmin(NoAddChange, admin.ModelAdmin):
+class RequisitionAdmin(NoAddChange, BaseAdmin):
     list_display = [
         'nordigen_id',
         'institution',
@@ -65,7 +72,7 @@ class RequisitionAdmin(NoAddChange, admin.ModelAdmin):
 
 
 @admin.register(Account)
-class AccountAdmin(NoAddChange, admin.ModelAdmin):
+class AccountAdmin(NoAddChange, BaseAdmin):
     list_display = [
         '__str__',
         'currency',
@@ -88,7 +95,7 @@ class AccountAdmin(NoAddChange, admin.ModelAdmin):
 
 
 @admin.register(Balance)
-class BalanceAdmin(NoAddChange, admin.ModelAdmin):
+class BalanceAdmin(NoAddChange, BaseAdmin):
     list_display = [
         '__str__',
         'account',
@@ -97,7 +104,7 @@ class BalanceAdmin(NoAddChange, admin.ModelAdmin):
 
 
 @admin.register(Transaction)
-class TransactionAdmin(NoAddChange, admin.ModelAdmin):
+class TransactionAdmin(NoAddChange, BaseAdmin):
     search_fields = [
         'api_data',
     ]
