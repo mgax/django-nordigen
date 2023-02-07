@@ -15,7 +15,7 @@ class BaseModel(models.Model):
 
 
 class Integration(BaseModel):
-    nordigen_id = models.UUIDField()
+    nordigen_id = models.UUIDField(unique=True)
 
     def __str__(self):
         return str(self.nordigen_id)
@@ -92,7 +92,7 @@ class Requisition(BaseModel):
 class Account(BaseModel):
     integration = models.ForeignKey(Integration, on_delete=models.CASCADE)
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
-    nordigen_id = models.UUIDField()
+    nordigen_id = models.UUIDField(unique=True)
     api_data = models.JSONField()
     api_details = models.JSONField()
     requisitions = models.ManyToManyField(Requisition, blank=True)
