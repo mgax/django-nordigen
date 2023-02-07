@@ -141,7 +141,9 @@ class Api:
                     account.api_details = api_details
 
                 if changed:
-                    logger.info('Account fields changed: %s', changed)
+                    logger.info(
+                        'Account fields for %s changed: %s', account, changed
+                    )
                     account.save(update_fields=changed)
 
             account.requisitions.add(requisition)
