@@ -19,6 +19,7 @@ def get_client(integration):
     client = NordigenClient(
         secret_id=str(integration.nordigen_id),
         secret_key=settings.NORDIGEN_KEY,
+        timeout=60,
     )
 
     access_token = integration.get_token(Token.TokenType.ACCESS)
