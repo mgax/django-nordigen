@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('django_nordigen', '0005_balance'),
+        ("django_nordigen", "0005_balance"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='requisition',
-            name='max_historical_days',
+            model_name="requisition",
+            name="max_historical_days",
             field=models.PositiveSmallIntegerField(default=90),
             preserve_default=False,
         ),

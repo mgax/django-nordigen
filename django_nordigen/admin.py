@@ -10,7 +10,7 @@ from .models import (
     Integration,
     Requisition,
     Token,
-    Transaction
+    Transaction,
 )
 
 
@@ -26,38 +26,38 @@ class NoAddChange(NoAdd):
 
 class BaseAdmin(admin.ModelAdmin):
     readonly_fields = [
-        'created_at',
-        'updated_at',
+        "created_at",
+        "updated_at",
     ]
 
 
 @admin.register(Integration)
 class IntegrationAdmin(NoAddChange, BaseAdmin):
     list_display = [
-        'nordigen_id',
+        "nordigen_id",
     ]
 
 
 @admin.register(Token)
 class TokenAdmin(NoAddChange, BaseAdmin):
     list_display = [
-        'integration',
-        'type',
-        'updated_at',
-        'expires',
+        "integration",
+        "type",
+        "updated_at",
+        "expires",
     ]
 
     exclude = [
-        'value',
+        "value",
     ]
 
 
 @admin.register(Institution)
 class InstitutionAdmin(NoAddChange, BaseAdmin):
     list_display = [
-        'nordigen_id',
-        'name',
-        'logo_image',
+        "nordigen_id",
+        "name",
+        "logo_image",
     ]
 
     def logo_image(self, obj):
@@ -67,21 +67,21 @@ class InstitutionAdmin(NoAddChange, BaseAdmin):
 @admin.register(Requisition)
 class RequisitionAdmin(NoAddChange, BaseAdmin):
     list_display = [
-        'nordigen_id',
-        'institution',
-        'created_at',
+        "nordigen_id",
+        "institution",
+        "created_at",
     ]
 
 
 @admin.register(Account)
 class AccountAdmin(NoAdd, BaseAdmin):
     list_display = [
-        '__str__',
-        'balance',
-        'currency',
-        'transactions',
-        'institution',
-        'synced_at',
+        "__str__",
+        "balance",
+        "currency",
+        "transactions",
+        "institution",
+        "synced_at",
     ]
 
     readonly_fields = [
@@ -92,12 +92,12 @@ class AccountAdmin(NoAdd, BaseAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.annotate(transaction_count=models.Count('transaction'))
+        return queryset.annotate(transaction_count=models.Count("transaction"))
 
     def transactions(self, obj):
         return format_html(
             '<a href="{}?account_id={}">{}</a>',
-            reverse('admin:django_nordigen_transaction_changelist'),
+            reverse("admin:django_nordigen_transaction_changelist"),
             obj.pk,
             obj.transaction_count,
         )
@@ -106,26 +106,26 @@ class AccountAdmin(NoAdd, BaseAdmin):
 @admin.register(Balance)
 class BalanceAdmin(NoAddChange, BaseAdmin):
     list_display = [
-        '__str__',
-        'account',
-        'synced_at',
+        "__str__",
+        "account",
+        "synced_at",
     ]
 
 
 @admin.register(Transaction)
 class TransactionAdmin(NoAddChange, BaseAdmin):
     search_fields = [
-        'api_data',
+        "api_data",
     ]
 
-    date_hierarchy = 'booking_date'
+    date_hierarchy = "booking_date"
 
     list_display = [
-        '__str__',
-        'booking_date',
-        'account',
+        "__str__",
+        "booking_date",
+        "account",
     ]
 
     list_filter = [
-        'account',
+        "account",
     ]

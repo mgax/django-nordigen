@@ -4,19 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('django_nordigen', '0006_requisition_max_historical_days'),
+        ("django_nordigen", "0006_requisition_max_historical_days"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='transaction',
-            name='nordigen_id',
+            model_name="transaction",
+            name="nordigen_id",
             field=models.CharField(max_length=32),
         ),
         migrations.AddConstraint(
-            model_name='transaction',
-            constraint=models.UniqueConstraint(fields=('account', 'nordigen_id'), name='nordigen_unique_account_internal_id'),
+            model_name="transaction",
+            constraint=models.UniqueConstraint(
+                fields=("account", "nordigen_id"),
+                name="nordigen_unique_account_internal_id",
+            ),
         ),
     ]

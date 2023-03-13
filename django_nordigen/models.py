@@ -40,8 +40,8 @@ class Integration(BaseModel):
 
 class Token(BaseModel):
     class TokenType(models.TextChoices):
-        REFRESH = 'refresh', 'Refresh token'
-        ACCESS = 'access', 'Access token'
+        REFRESH = "refresh", "Refresh token"
+        ACCESS = "access", "Access token"
 
     integration = models.ForeignKey(Integration, on_delete=models.CASCADE)
     type = models.CharField(max_length=8, choices=TokenType.choices)
@@ -51,13 +51,13 @@ class Token(BaseModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['integration', 'type'],
-                name='nordigen_unique_integration_type',
+                fields=["integration", "type"],
+                name="nordigen_unique_integration_type",
             ),
         ]
 
     def __str__(self):
-        return f'{self.type} for {self.integration}'
+        return f"{self.type} for {self.integration}"
 
 
 class Institution(BaseModel):
@@ -69,11 +69,11 @@ class Institution(BaseModel):
 
     @property
     def name(self):
-        return self.api_data['name']
+        return self.api_data["name"]
 
     @property
     def logo(self):
-        return self.api_data['logo']
+        return self.api_data["logo"]
 
 
 class Requisition(BaseModel):
@@ -100,24 +100,22 @@ class Account(BaseModel):
     alias = models.CharField(max_length=1000, blank=True)
 
     class Meta:
-        ordering = ['-synced_at']
+        ordering = ["-synced_at"]
 
     @property
     def currency(self):
-        return self.api_details['account']['currency']
+        return self.api_details["account"]["currency"]
 
     @property
     def iban(self):
-        return self.api_details['account'].get('iban')
+        return self.api_details["account"].get("iban")
 
     def __str__(self):
         return self.alias or self.iban or str(self.nordigen_id)
 
     @property
     def balance(self):
-        balances = {
-            balance.type: balance.amount for balance in self.balance_set.all()
-        }
+        balances = {balance.type: balance.amount for balance in self.balance_set.all()}
         if balances:
             return balances.get("expected") or list(balances.values())[0]
 
@@ -129,15 +127,15 @@ class Balance(BaseModel):
     synced_at = models.DateTimeField(null=True)
 
     def __str__(self):
-        return f'{self.amount} {self.currency}'
+        return f"{self.amount} {self.currency}"
 
     @property
     def amount(self):
-        return self.api_data['balanceAmount']['amount']
+        return self.api_data["balanceAmount"]["amount"]
 
     @property
     def currency(self):
-        return self.api_data['balanceAmount']['currency']
+        return self.api_data["balanceAmount"]["currency"]
 
 
 class Transaction(BaseModel):
@@ -149,19 +147,19 @@ class Transaction(BaseModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['account', 'nordigen_id'],
-                name='nordigen_unique_account_internal_id',
+                fields=["account", "nordigen_id"],
+                name="nordigen_unique_account_internal_id",
             ),
         ]
-        ordering = ['-booking_date', '-pk']
+        ordering = ["-booking_date", "-pk"]
 
     def __str__(self):
-        return f'{self.amount} {self.currency}'
+        return f"{self.amount} {self.currency}"
 
     @property
     def amount(self):
-        return self.api_data['transactionAmount']['amount']
+        return self.api_data["transactionAmount"]["amount"]
 
     @property
     def currency(self):
-        return self.api_data['transactionAmount']['currency']
+        return self.api_data["transactionAmount"]["currency"]

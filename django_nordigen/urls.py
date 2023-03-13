@@ -2,8 +2,8 @@ from django.urls import path
 
 from . import views
 
-app_name = 'nordigen'
+app_name = "nordigen"
 
 urlpatterns = [
-    path('redirect', views.redirect, name='redirect'),
+    path("redirect", views.redirect, name="redirect"),
 ]

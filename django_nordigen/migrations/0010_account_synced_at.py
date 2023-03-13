@@ -4,24 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('django_nordigen', '0009_alter_transaction_options'),
+        ("django_nordigen", "0009_alter_transaction_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='synced_at',
+            model_name="account",
+            name="synced_at",
             field=models.DateTimeField(null=True),
         ),
         migrations.AlterModelOptions(
-            name='account',
-            options={'ordering': ['-synced_at']},
+            name="account",
+            options={"ordering": ["-synced_at"]},
         ),
         migrations.AddField(
-            model_name='balance',
-            name='synced_at',
+            model_name="balance",
+            name="synced_at",
             field=models.DateTimeField(null=True),
         ),
     ]

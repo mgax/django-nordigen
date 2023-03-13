@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('django_nordigen', '0008_balance_type'),
+        ("django_nordigen", "0008_balance_type"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='transaction',
-            options={'ordering': ['-booking_date', '-pk']},
+            name="transaction",
+            options={"ordering": ["-booking_date", "-pk"]},
         ),
     ]

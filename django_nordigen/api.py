@@ -24,33 +24,33 @@ def get_client(integration):
 
     access_token = integration.get_token(Token.TokenType.ACCESS)
     if access_token is None:
-        logger.info('No valid access token found; getting one ...')
+        logger.info("No valid access token found; getting one ...")
         refresh_token = integration.get_token(Token.TokenType.REFRESH)
 
         if refresh_token is None:
-            logger.info('No valid refresh token found; getting one ...')
+            logger.info("No valid refresh token found; getting one ...")
             token_data = client.generate_token()
             integration.save_token(
                 Token.TokenType.REFRESH,
-                token_data['refresh_expires'],
-                token_data['refresh'],
+                token_data["refresh_expires"],
+                token_data["refresh"],
             )
             access_token = integration.save_token(
                 Token.TokenType.ACCESS,
-                token_data['access_expires'],
-                token_data['access'],
+                token_data["access_expires"],
+                token_data["access"],
             )
-            logger.info('Got access and refresh tokens')
+            logger.info("Got access and refresh tokens")
 
         else:
-            logger.info('Exchanging refresh token ...')
+            logger.info("Exchanging refresh token ...")
             token_data = client.exchange_token(refresh_token.value)
             access_token = integration.save_token(
                 Token.TokenType.ACCESS,
-                token_data['access_expires'],
-                token_data['access'],
+                token_data["access_expires"],
+                token_data["access"],
             )
-            logger.info('Got access token')
+            logger.info("Got access token")
 
     client.token = access_token.value
     return client
@@ -78,9 +78,7 @@ class Api:
     def create_requisition(self, institution_id, days):
         reference_id = str(uuid4())
         institution = get_or_create_institution(self.client, institution_id)
-        redirect_uri = urljoin(
-            settings.NORDIGEN_SITE_URL, reverse('nordigen:redirect')
-        )
+        redirect_uri = urljoin(settings.NORDIGEN_SITE_URL, reverse("nordigen:redirect"))
         session = self.client.initialize_session(
             institution_id=institution_id,
             redirect_uri=redirect_uri,
@@ -98,26 +96,24 @@ class Api:
     def accept_requisition(self, requisition):
         self.sync_requisition(requisition)
         requisition.completed = True
-        requisition.save(update_fields=['completed'])
+        requisition.save(update_fields=["completed"])
 
     def sync_requisition(self, requisition):
         api_data = self.client.requisition.get_requisition_by_id(
             requisition_id=requisition.nordigen_id
         )
         if api_data != requisition.api_data:
-            logger.info('Requisition data updated for %s', requisition)
+            logger.info("Requisition data updated for %s", requisition)
             requisition.api_data = api_data
-            requisition.save(update_fields=['api_data'])
+            requisition.save(update_fields=["api_data"])
 
-        for account_id in requisition.api_data['accounts']:
+        for account_id in requisition.api_data["accounts"]:
             account_api = self.client.account_api(id=account_id)
             api_data = account_api.get_metadata()
             api_details = account_api.get_details()
 
             try:
-                account = self.integration.account_set.get(
-                    nordigen_id=account_id
-                )
+                account = self.integration.account_set.get(nordigen_id=account_id)
 
             except Account.DoesNotExist:
                 account = self.integration.account_set.create(
@@ -126,7 +122,7 @@ class Api:
                     api_data=api_data,
                     api_details=api_details,
                 )
-                logger.info('Account %s created', account)
+                logger.info("Account %s created", account)
 
             else:
                 changed = []
@@ -134,17 +130,15 @@ class Api:
                 if dict(api_data, last_accessed=None) != dict(
                     account.api_data, last_accessed=None
                 ):
-                    changed.append('api_data')
+                    changed.append("api_data")
                     account.api_data = api_data
 
                 if api_details != account.api_details:
-                    changed.append('api_details')
+                    changed.append("api_details")
                     account.api_details = api_details
 
                 if changed:
-                    logger.info(
-                        'Account fields for %s changed: %s', account, changed
-                    )
+                    logger.info("Account fields for %s changed: %s", account, changed)
                     account.save(update_fields=changed)
 
             account.requisitions.add(requisition)
@@ -170,16 +164,14 @@ class Api:
         while date_from < now:
             date_to = min([date_from + interval, now])
             logger.info(
-                'Fetching transactions from %s %s %s',
+                "Fetching transactions from %s %s %s",
                 account.nordigen_id,
                 date_from,
                 date_to,
             )
-            resp = account_api.get_transactions(
-                date_from=date_from, date_to=date_to
-            )
-            for api_data in resp['transactions']['booked']:
-                nordigen_id = api_data.get('internalTransactionId')
+            resp = account_api.get_transactions(date_from=date_from, date_to=date_to)
+            for api_data in resp["transactions"]["booked"]:
+                nordigen_id = api_data.get("internalTransactionId")
                 if nordigen_id:
                     yield nordigen_id, api_data
 
@@ -187,8 +179,8 @@ class Api:
 
     def get_balances(self, account):
         account_api = self.client.account_api(id=account.nordigen_id)
-        logger.info('Fetching balances from %s', account.nordigen_id)
-        return account_api.get_balances()['balances']
+        logger.info("Fetching balances from %s", account.nordigen_id)
+        return account_api.get_balances()["balances"]
 
     def _sync_transactions(self, account, since):
         seen = set()
@@ -201,7 +193,7 @@ class Api:
         for nordigen_id, api_data in self.iter_transactions(account, since):
             if nordigen_id in seen:
                 continue
-            bookingDate = api_data.get('bookingDate')
+            bookingDate = api_data.get("bookingDate")
             booking_date = bookingDate and date.fromisoformat(bookingDate)
             new.append(
                 Transaction(
@@ -215,24 +207,24 @@ class Api:
 
         Transaction.objects.bulk_create(new)
         if new:
-            logger.info('Created %d transactions', len(new))
+            logger.info("Created %d transactions", len(new))
 
     def sync_account(self, account, history, transactions=True):
-        logger.info('Sync account %s', account)
+        logger.info("Sync account %s", account)
         now = timezone.now()
 
         for api_data in self.get_balances(account):
             account.balance_set.update_or_create(
-                type=api_data['balanceType'],
+                type=api_data["balanceType"],
                 defaults=dict(
                     api_data=api_data,
                     synced_at=now,
-                )
+                ),
             )
 
         if transactions:
             if history:
-                req = account.requisitions.order_by('-created_at').first()
+                req = account.requisitions.order_by("-created_at").first()
                 since = now.date() - timedelta(days=req.max_historical_days)
 
             else:
@@ -241,7 +233,7 @@ class Api:
             self._sync_transactions(account, since)
 
         account.synced_at = now
-        account.save(update_fields=['synced_at'])
+        account.save(update_fields=["synced_at"])
 
 
 def get_api():
