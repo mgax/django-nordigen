@@ -97,6 +97,7 @@ class Account(BaseModel):
     api_details = models.JSONField()
     requisitions = models.ManyToManyField(Requisition, blank=True)
     synced_at = models.DateTimeField(null=True)
+    alias = models.CharField(max_length=1000, blank=True)
 
     class Meta:
         ordering = ['-synced_at']
@@ -110,7 +111,7 @@ class Account(BaseModel):
         return self.api_details['account'].get('iban')
 
     def __str__(self):
-        return self.iban or str(self.nordigen_id)
+        return self.alias or self.iban or str(self.nordigen_id)
 
 
 class Balance(BaseModel):

@@ -14,10 +14,12 @@ from .models import (
 )
 
 
-class NoAddChange:
+class NoAdd:
     def has_add_permission(self, request):
         return False
 
+
+class NoAddChange(NoAdd):
     def has_change_permission(self, request, obj=None):
         return False
 
@@ -72,13 +74,19 @@ class RequisitionAdmin(NoAddChange, BaseAdmin):
 
 
 @admin.register(Account)
-class AccountAdmin(NoAddChange, BaseAdmin):
+class AccountAdmin(NoAdd, BaseAdmin):
     list_display = [
         '__str__',
         'currency',
         'transactions',
         'institution',
         'synced_at',
+    ]
+
+    readonly_fields = [
+        field.name
+        for field in Account._meta.fields + Account._meta.many_to_many
+        if field.name != "alias"
     ]
 
     def get_queryset(self, request):
