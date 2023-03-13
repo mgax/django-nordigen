@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,6 +16,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_nordigen",
 ]
 
 MIDDLEWARE = [
@@ -65,3 +67,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+NORDIGEN_ID = os.environ["NORDIGEN_ID"]
+NORDIGEN_KEY = os.environ["NORDIGEN_KEY"]
+NORDIGEN_SITE_URL = os.environ["NORDIGEN_SITE_URL"]
