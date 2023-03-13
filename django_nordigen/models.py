@@ -113,6 +113,14 @@ class Account(BaseModel):
     def __str__(self):
         return self.alias or self.iban or str(self.nordigen_id)
 
+    @property
+    def balance(self):
+        balances = {
+            balance.type: balance.amount for balance in self.balance_set.all()
+        }
+        if balances:
+            return balances.get("expected") or list(balances.values())[0]
+
 
 class Balance(BaseModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)

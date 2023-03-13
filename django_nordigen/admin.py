@@ -77,6 +77,7 @@ class RequisitionAdmin(NoAddChange, BaseAdmin):
 class AccountAdmin(NoAdd, BaseAdmin):
     list_display = [
         '__str__',
+        'balance',
         'currency',
         'transactions',
         'institution',
