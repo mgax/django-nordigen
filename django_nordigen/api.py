@@ -150,11 +150,20 @@ class Api:
                 requisitions is ALL_REQUISITIONS
                 or requisition.nordigen_id in requisitions
             ):
-                self.sync_requisition(requisition)
-                for account in requisition.account_set.exclude(
-                    synced_at__gt=now - max_age
-                ):
-                    self.sync_account(account, history, transactions)
+                try:
+                    self.sync_requisition(requisition)
+                    for account in requisition.account_set.exclude(
+                        synced_at__gt=now - max_age
+                    ):
+                        try:
+                            self.sync_account(account, history, transactions)
+                        except Exception:
+                            logger.error("Error syncing account %r", account)
+                            raise
+
+                except Exception:
+                    logger.error("Error syncing requisition %r", requisition)
+                    raise
 
     def iter_transactions(self, account, since, interval=timedelta(days=30)):
         account_api = self.client.account_api(id=account.nordigen_id)
