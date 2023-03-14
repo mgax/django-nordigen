@@ -54,6 +54,10 @@ class TokenAdmin(NoAddChange, BaseAdmin):
 
 @admin.register(Institution)
 class InstitutionAdmin(NoAddChange, BaseAdmin):
+    search_fields = [
+        "api_data",
+    ]
+
     list_display = [
         "nordigen_id",
         "name",
@@ -66,6 +70,10 @@ class InstitutionAdmin(NoAddChange, BaseAdmin):
 
 @admin.register(Requisition)
 class RequisitionAdmin(NoAddChange, BaseAdmin):
+    search_fields = [
+        "api_data",
+    ]
+
     list_display = [
         "nordigen_id",
         "institution",
@@ -75,6 +83,12 @@ class RequisitionAdmin(NoAddChange, BaseAdmin):
 
 @admin.register(Account)
 class AccountAdmin(NoAdd, BaseAdmin):
+    search_fields = [
+        "api_data",
+        "api_details",
+        "alias",
+    ]
+
     list_display = [
         "__str__",
         "balance",
@@ -105,6 +119,14 @@ class AccountAdmin(NoAdd, BaseAdmin):
 
 @admin.register(Balance)
 class BalanceAdmin(NoAddChange, BaseAdmin):
+    search_fields = [
+        "api_data",
+    ]
+
+    list_filter = [
+        "account",
+    ]
+
     list_display = [
         "__str__",
         "account",
