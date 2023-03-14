@@ -69,7 +69,7 @@ class InstitutionAdmin(NoAddChange, BaseAdmin):
 
 
 @admin.register(Requisition)
-class RequisitionAdmin(NoAddChange, BaseAdmin):
+class RequisitionAdmin(NoAdd, BaseAdmin):
     search_fields = [
         "api_data",
     ]
@@ -78,6 +78,16 @@ class RequisitionAdmin(NoAddChange, BaseAdmin):
         "nordigen_id",
         "institution",
         "created_at",
+        "active",
+    ]
+
+    list_filter = [
+        "institution",
+        "active",
+    ]
+
+    readonly_fields = [
+        field.name for field in Requisition._meta.fields if field.name != "active"
     ]
 
 

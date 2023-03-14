@@ -145,7 +145,7 @@ class Api:
 
     def sync(self, requisitions, max_age, history, transactions=True):
         now = timezone.now()
-        for requisition in self.integration.requisition_set.all():
+        for requisition in self.integration.requisition_set.filter(active=True):
             if (
                 requisitions is ALL_REQUISITIONS
                 or requisition.nordigen_id in requisitions

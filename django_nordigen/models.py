@@ -84,6 +84,7 @@ class Requisition(BaseModel):
     api_data = models.JSONField(null=True, blank=True)
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
     max_historical_days = models.PositiveSmallIntegerField()
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.nordigen_id)
