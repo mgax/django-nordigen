@@ -155,6 +155,7 @@ class TransactionAdmin(NoAddChange, BaseAdmin):
     list_display = [
         "__str__",
         "booking_date",
+        "description",
         "account",
     ]
 

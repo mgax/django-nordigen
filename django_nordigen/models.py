@@ -164,3 +164,9 @@ class Transaction(BaseModel):
     @property
     def currency(self):
         return self.api_data["transactionAmount"]["currency"]
+
+    @property
+    def description(self):
+        return self.api_data.get("remittanceInformationUnstructured") or " ".join(
+            self.api_data.get("remittanceInformationUnstructuredArray", [])
+        )
