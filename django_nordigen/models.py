@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 
-TOKEN_GRACE_PERIOD = timedelta(seconds=10)
+TOKEN_GRACE_PERIOD = timedelta(hours=1)
 
 
 class BaseModel(models.Model):
