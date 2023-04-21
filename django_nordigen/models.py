@@ -23,7 +23,7 @@ class Integration(BaseModel):
     def get_token(self, token_type):
         qs = self.token_set.filter(
             type=token_type,
-            expires__gt=timezone.now() - TOKEN_GRACE_PERIOD,
+            expires__gt=timezone.now() + TOKEN_GRACE_PERIOD,
         )
         return qs.first()
 
