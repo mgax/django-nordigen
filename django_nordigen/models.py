@@ -89,6 +89,9 @@ class Requisition(BaseModel):
     def __str__(self):
         return str(self.nordigen_id)
 
+    def __repr__(self):
+        return f"<{type(self).__name__}: {self} ({self.institution.nordigen_id})>"
+
 
 class Account(BaseModel):
     integration = models.ForeignKey(Integration, on_delete=models.CASCADE)
