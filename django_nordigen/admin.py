@@ -15,12 +15,17 @@ from .models import (
 
 
 class NoAdd:
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
 
 class NoAddChange(NoAdd):
     def has_change_permission(self, request, obj=None):
+        return False
+
+
+class NoAddChangeDelete(NoAddChange):
+    def has_delete_permission(self, request, obj=None):
         return False
 
 
@@ -68,6 +73,10 @@ class InstitutionAdmin(NoAddChange, BaseAdmin):
         return format_html('<img width=30 src="{}">', obj.logo)
 
 
+class AccountInline(NoAddChangeDelete, admin.TabularInline):
+    model = Requisition.account_set.through
+
+
 @admin.register(Requisition)
 class RequisitionAdmin(NoAdd, BaseAdmin):
     search_fields = [
@@ -87,8 +96,16 @@ class RequisitionAdmin(NoAdd, BaseAdmin):
     ]
 
     readonly_fields = [
-        field.name for field in Requisition._meta.fields if field.name != "active"
+        name for name in Requisition.all_field_names if name not in ["active"]
     ]
+
+    inlines = [
+        AccountInline,
+    ]
+
+
+class RequisitionInline(NoAddChangeDelete, admin.TabularInline):
+    model = Account.requisitions.through
 
 
 @admin.register(Account)
@@ -108,10 +125,18 @@ class AccountAdmin(NoAdd, BaseAdmin):
         "synced_at",
     ]
 
+    exclude = [
+        "requisitions",
+    ]
+
     readonly_fields = [
-        field.name
-        for field in Account._meta.fields + Account._meta.many_to_many
-        if field.name != "alias"
+        name
+        for name in Account.all_field_names
+        if name not in ["alias", "requisitions"]
+    ]
+
+    inlines = [
+        RequisitionInline,
     ]
 
     def get_queryset(self, request):

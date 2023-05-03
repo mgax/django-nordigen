@@ -13,6 +13,11 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+    @classmethod
+    @property
+    def all_field_names(cls):
+        return [field.name for field in cls._meta.fields + cls._meta.many_to_many]
+
 
 class Integration(BaseModel):
     nordigen_id = models.UUIDField(unique=True)
