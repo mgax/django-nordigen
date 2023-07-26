@@ -145,7 +145,7 @@ class AccountAdmin(NoAdd, BaseAdmin):
 
     def transactions(self, obj):
         return format_html(
-            '<a href="{}?account_id={}">{}</a>',
+            '<a href="{}?account__id__exact={}">{}</a>',
             reverse("admin:django_nordigen_transaction_changelist"),
             obj.pk,
             obj.transaction_count,
