@@ -84,6 +84,7 @@ class Api:
             redirect_uri=redirect_uri,
             reference_id=reference_id,
             max_historical_days=days,
+            access_valid_for_days=180,
         )
         self.integration.requisition_set.create(
             institution=institution,
