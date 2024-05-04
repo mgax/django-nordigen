@@ -200,7 +200,9 @@ class Api:
                 since = tr.booking_date
 
         new = []
-        for nordigen_id, api_data in self.iter_transactions(account, since):
+        for nordigen_id, api_data in self.iter_transactions(
+            account, since - timedelta(days=1)
+        ):
             if nordigen_id in seen:
                 continue
             bookingDate = api_data.get("bookingDate")
