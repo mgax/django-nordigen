@@ -1,8 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db import models
 from django.urls import reverse
 from django.utils.html import format_html
 
+from .api import get_api
 from .models import (
     Account,
     Balance,
@@ -57,6 +58,21 @@ class TokenAdmin(NoAddChange, BaseAdmin):
     ]
 
 
+def refresh_institutions(
+    modeladmin: "InstitutionAdmin", request, queryset: models.QuerySet[Institution]
+):
+    api = get_api()
+    count = 0
+    for institution in queryset:
+        institution.api_data = api.get_institution_data(institution.nordigen_id)
+        institution.save()
+        count += 1
+
+    modeladmin.message_user(
+        request, f"Refreshed {count} institutions", messages.SUCCESS
+    )
+
+
 @admin.register(Institution)
 class InstitutionAdmin(NoAddChange, BaseAdmin):
     search_fields = [
@@ -67,6 +83,10 @@ class InstitutionAdmin(NoAddChange, BaseAdmin):
         "nordigen_id",
         "name",
         "logo_image",
+    ]
+
+    actions = [
+        refresh_institutions,
     ]
 
     def logo_image(self, obj):

@@ -75,6 +75,9 @@ class Api:
     def get_institutions(self, country):
         return self.client.institution.get_institutions(country=country)
 
+    def get_institution_data(self, nordigen_id):
+        return self.client.institution.get_institution_by_id(nordigen_id)
+
     def create_requisition(self, institution_id, days):
         reference_id = str(uuid4())
         institution = get_or_create_institution(self.client, institution_id)
