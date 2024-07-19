@@ -78,7 +78,9 @@ class Api:
     def get_institution_data(self, nordigen_id):
         return self.client.institution.get_institution_by_id(nordigen_id)
 
-    def create_requisition(self, institution_id, days):
+    def create_requisition(
+        self, institution_id, max_historical_days, access_valid_for_days
+    ):
         reference_id = str(uuid4())
         institution = get_or_create_institution(self.client, institution_id)
         redirect_uri = urljoin(settings.NORDIGEN_SITE_URL, reverse("nordigen:redirect"))
@@ -86,14 +88,14 @@ class Api:
             institution_id=institution_id,
             redirect_uri=redirect_uri,
             reference_id=reference_id,
-            max_historical_days=days,
-            access_valid_for_days=180,
+            max_historical_days=max_historical_days,
+            access_valid_for_days=access_valid_for_days,
         )
         self.integration.requisition_set.create(
             institution=institution,
             nordigen_id=session.requisition_id,
             reference_id=reference_id,
-            max_historical_days=days,
+            max_historical_days=max_historical_days,
         )
         return session.link
 

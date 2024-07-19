@@ -8,10 +8,18 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("institution")
-        parser.add_argument("--days", default=90)
+        parser.add_argument("--max-historical-days", default=30)
+        parser.add_argument("--access-valid-for-days", default=180)
 
-    def handle(self, *args, **options):
-        institution = options["institution"]
-        days = options["days"]
-        link = get_api().create_requisition(institution, days)
+    def handle(
+        self,
+        *,
+        institution,
+        max_historical_days,
+        access_valid_for_days,
+        **options,
+    ):
+        link = get_api().create_requisition(
+            institution, max_historical_days, access_valid_for_days
+        )
         print(link)
